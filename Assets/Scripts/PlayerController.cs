@@ -3,7 +3,7 @@ using System.Collections;
 [RequireComponent(typeof(PlayerPhysics))]
 public class PlayerController : MonoBehaviour {
 	
-	public float fSpeed = 1;
+	public float fSpeed = .5f;
 	public float fAcc = 5;
 	private float fCurrentSpeed_X;
 	private float fTargetSpeed_X;
@@ -27,32 +27,45 @@ public class PlayerController : MonoBehaviour {
 		fCurrentSpeed_X = IncrementTowards (fCurrentSpeed_X, fTargetSpeed_X, fAcc);
 		fTargetSpeed_Y = Input.GetAxisRaw ("Vertical") * fSpeed;
 		fCurrentSpeed_Y = IncrementTowards (fCurrentSpeed_Y, fTargetSpeed_Y, fAcc);
-		fTargetSpeed_Z = Input.GetAxisRaw ("Jump") * fSpeed;
-		//fCurrentSpeed_Z = IncrementTowards (fCurrentSpeed_Z, fTargetSpeed_Z, fAcc);
-		vMove = new Vector3 (fCurrentSpeed_X, fCurrentSpeed_Y, -fTargetSpeed_Z);
+
+		if(Input.GetButtonDown("Jump"))
+		{
+			fTargetSpeed_Z = Input.GetAxisRaw ("Jump") * -0.1f;
+			Invoke("StopJump",.1f);
+		}
+		vMove = new Vector3 (fCurrentSpeed_X, fCurrentSpeed_Y, fTargetSpeed_Z);
 		PlayerPhysics.Move (vMove);
 
-		if(Input.GetMouseButtonDown(2))
+		Vector3 v3MousePos = Input.mousePosition;
+		v3MousePos.x -= (Screen.width 	* 0.5f);
+		v3MousePos.y -= (Screen.height 	* 0.5f);
+		float fMouseAngle = Mathf.Abs(Mathf.Abs(((Mathf.Atan(v3MousePos.y/v3MousePos.x)*180f)/Mathf.PI))-90f);
+		float fCurrentAngle = transform.GetChild (1).localEulerAngles.z;
+		if (v3MousePos.x >= 0 & v3MousePos.y >= 0 ) 
 		{
-			fMouseX_Start = Input.GetAxis("Mouse X");
-			fMouseY_Start = Input.GetAxis("Mouse Y");
-			bPlayerRotateFlag = true;
+			fMouseAngle = 360f - fMouseAngle;
 		}
+		else if(v3MousePos.x <= 0 & v3MousePos.y >= 0 )
+		{
+			fMouseAngle = 360f + fMouseAngle;
+		}
+		else if(v3MousePos.x <= 0 & v3MousePos.y <= 0 )
+		{
+			fMouseAngle = 360f + ((90f-fMouseAngle)+90f);
+		}
+		else
+		{
+			fMouseAngle = 360f - (90f-fMouseAngle)-90f;
+		}
+		transform.GetChild(1).Rotate(0,0,fMouseAngle-fCurrentAngle, Space.World);
 
-		if(bPlayerRotateFlag)
-		{
-			float fRotateXDiff = Input.GetAxis("Mouse X") - fMouseX_Start;
-			//			Quaternion rotation = Quaternion.Euler (0, fRotateXDiff, 0);
-			PlayerPhysics.Rotate (new Vector3(0,0,-fRotateXDiff*2f));
-		}
-
-		if(Input.GetMouseButtonUp(2))
-		{
-			bPlayerRotateFlag = false;
-		}
-	
+			
 	}
 	
+	private void StopJump()
+	{	
+				fTargetSpeed_Z = 0;
+	}
 	private float IncrementTowards(float n, float target, float a){
 		if (n == target) {
 			return n;
