@@ -10,11 +10,15 @@ public class PlayerPhysics : MonoBehaviour {
 	{
 		transform.Translate (vMove);
 	}
+	public void Rotate(Vector3 vRot)
+	{
+		transform.Rotate (vRot);
+	}
 	void Update()
 	{
-		if (transform.position.z >  10f) 
+		if (transform.position.z >  1.4f) 
 		{
-			rigidbody.position = new Vector3(0f,-3f,-.5f);
+			rigidbody.position = new Vector3(5f,.5f,-.66f);
 		}
 	}
 
